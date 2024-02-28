@@ -1,15 +1,12 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
-using UnityEngine.Advertisements;
-using UnityEngine.Purchasing;
 using UnityEngine.UI;
+
 
 public class App : MonoBehaviour
 {
     public Carrot.Carrot carrot;
     public GameObject panel_add;
-    public GameObject button_RemoveAds;
     public GameObject button_List_Online_Password;
 
     [Header("Add Password")]
@@ -28,49 +25,23 @@ public class App : MonoBehaviour
     public InputField inp_string_m5d;
     public Text txt_m5d_show;
     public Text txt_m5d_type;
-    public AudioSource SoundClick;
-    public AudioSource SoundSuccess;
+
+    [Header("Other")]
+    public AudioSource[] sounds;
+    public AudioClip SoundClicl_clip;
+
     private Item_encode item_encode_temp;
-
-    [Header("Ads")]
-    public string id_ads_app_vungle;
-    public string id_ads_trunggiang_vungle;
-
-#if UNITY_IOS
-	private string gameId = "3398022";
-#elif UNITY_ANDROID
-    private string gameId = "3398023";
-#endif
-    private int count_click_ads = 0;
 
     void Start()
     {
         this.carrot.Load_Carrot(check_exit_app);
-        this.carrot.shop.onCarrotPaySuccess = this.On_Buy_Success_Carrot_Pay;
-        this.carrot.shop.onCarrotRestoreSuccess = this.On_Restore_Carrot_Pay;
         this.carrot.act_after_close_all_box = this.check_list_online_password;
+        this.carrot.change_sound_click(this.SoundClicl_clip);
+
         this.panel_add.SetActive(false);
         this.panel_m5d.SetActive(false);
         this.GetComponent<Data_Password>().load_data();
         this.check_list_online_password();
-#if UNITY_WSA
-        Vungle.init(this.id_ads_app_vungle);
-        Vungle.loadAd(this.id_ads_trunggiang_vungle);
-#elif UNITY_ANDROID
-        if (Advertisement.isSupported) Advertisement.Initialize(gameId);
-#endif
-
-        this.check_inapp_remove_ads();
-    }
-
-
-
-    private void check_inapp_remove_ads()
-    {
-        if (PlayerPrefs.GetInt("is_buy_ads", 0) == 0)
-            this.button_RemoveAds.SetActive(true);
-        else
-            this.button_RemoveAds.SetActive(false);
     }
 
     private void check_exit_app()
@@ -88,6 +59,7 @@ public class App : MonoBehaviour
 
     public void show_add()
     {
+        this.carrot.ads.show_ads_Interstitial();
         this.create_pass();
         this.inp_password_tag.text = "Password " + this.GetComponent<Data_Password>().get_length();
         this.panel_add.SetActive(true);
@@ -95,7 +67,7 @@ public class App : MonoBehaviour
 
     public void create_pass()
     {
-        this.SoundClick.Play();
+        this.carrot.play_sound_click();
         const int MAXIMUM_PASSWORD_ATTEMPTS = 10000;
         bool includeLowercase = this.Toggle_includeLowercase.isOn;
         bool includeUppercase = this.Toggle_includeUppercase.isOn;
@@ -127,29 +99,25 @@ public class App : MonoBehaviour
 
     public void add_password()
     {
-        this.SoundSuccess.Play();
-        this.check_show_ads();
+        this.carrot.ads.show_ads_Interstitial();
+        this.play_sound(0);
+        this.carrot.ads.show_ads_Interstitial();
         this.GetComponent<Data_Password>().add(this.txt_password.text, this.inp_password_tag.text, DateTime.Today.ToString(),0);
         this.panel_add.SetActive(false);
     }
 
     public void add_md5()
     {
-        this.SoundSuccess.Play();
-        this.check_show_ads();
+        this.play_sound(0);
+        this.carrot.ads.show_ads_Interstitial();
         this.GetComponent<Data_Password>().add(this.txt_m5d_show.text, this.inp_string_m5d.text, DateTime.Today.ToString(), 1);
         this.panel_m5d.SetActive(false);
     }
 
-    public void show_app_more()
-    {
-        this.SoundClick.Play();
-        this.carrot.show_list_carrot_app();
-    }
-
     public void show_m5d()
     {
-        this.SoundClick.Play();
+        this.carrot.ads.show_ads_Interstitial();
+        this.carrot.play_sound_click();
         this.panel_m5d.SetActive(true);
         this.panel_m5d_menu.SetActive(true);
     }
@@ -164,7 +132,7 @@ public class App : MonoBehaviour
 
     public void create_m5d()
     {
-        this.SoundClick.Play();
+        this.carrot.play_sound_click();
         if(this.item_encode_temp.int_type==0)
             this.txt_m5d_show.text = PasswordGenerator.MD5Hash(this.inp_string_m5d.text);
         else if (this.item_encode_temp.int_type == 1)
@@ -179,40 +147,23 @@ public class App : MonoBehaviour
             this.txt_m5d_show.text = PasswordGenerator.SHA256(this.inp_string_m5d.text);
     }
 
-    public void rate_app()
-    {
-        this.SoundClick.Play();
-        this.carrot.show_rate();
-    }
-
-    public void app_share()
-    {
-        this.SoundClick.Play();
-        this.carrot.show_share();
-    }
-
-    public void check_show_ads()
-    {
-        this.carrot.ads.show_ads_Interstitial();
-    }
-
-    public void reset_app()
-    {
-        this.SoundClick.Play();
-        this.carrot.delete_all_data();
-        this.check_inapp_remove_ads();
-    }
-
     public void copy_text_password()
     {
-        carrot.play_sound_click();
-        carrot.show_input(PlayerPrefs.GetString("copy_success", "Has been copied!"), PlayerPrefs.GetString("copy_success", "Has been copied!"), txt_password.text, Carrot.Window_Input_value_Type.input_field);
+        this.copy(this.txt_password.text);
     }
 
     public void copy_text_m5d()
     {
-        carrot.play_sound_click();
-        carrot.show_input(PlayerPrefs.GetString("copy_success", "Has been copied!"), PlayerPrefs.GetString("copy_success", "Has been copied!"), txt_m5d_show.text, Carrot.Window_Input_value_Type.input_field);
+        this.copy(this.txt_m5d_show.text);
+    }
+
+    public void copy(string s_copy)
+    {
+        TextEditor txt_copy = new TextEditor();
+        txt_copy.text = s_copy;
+        txt_copy.SelectAll();
+        txt_copy.Copy();
+        this.carrot.show_input(PlayerPrefs.GetString("copy", "Copy"), PlayerPrefs.GetString("copy_success", "Copy successful !!!"), s_copy);
     }
 
     public void set_length_by_inp()
@@ -220,60 +171,15 @@ public class App : MonoBehaviour
         this.slider_password.value =int.Parse(this.inp_password_length.text);
     }
 
-    public void buy_success(Product product)
-    {
-        this.On_Buy_Success_Carrot_Pay(product.definition.id);
-    }
-
-    public void buy_product(int index_product)
-    {
-        this.carrot.buy_product(index_product);
-    }
-
-    private void act_inapp_removeAds()
-    {
-        PlayerPrefs.SetInt("is_buy_ads", 1);
-        this.button_RemoveAds.SetActive(false);
-    }
-
-    private void On_Buy_Success_Carrot_Pay(string id_product)
-    {
-        if (id_product == this.carrot.shop.get_id_by_index(0))
-        {
-            this.carrot.show_msg(PlayerPrefs.GetString("Shop", "shop"), "Successful removal of advertising! Thank you for your purchase of the app's items", Carrot.Msg_Icon.Success);
-            this.act_inapp_removeAds();
-        }
-    }
-
-    private void On_Restore_Carrot_Pay(string[] arr_id)
-    {
-        for(int i = 0; i < arr_id.Length; i++)
-        {
-            string id_p = arr_id[i];
-            if (id_p == this.carrot.shop.get_id_by_index(0)) this.act_inapp_removeAds();
-        }
-    }
-
-    public void Restore_Product()
-    {
-        this.SoundClick.Play();
-        this.carrot.restore_product();
-    }
-
     public void btn_user()
     {
-        this.SoundClick.Play();
-        this.carrot.show_login();
-    }
-
-    public void btn_sel_lang()
-    {
-        this.SoundClick.Play();
-        this.carrot.show_list_lang();
+        this.carrot.play_sound_click();
+        this.carrot.user.show_login(this.On_After_Login);
     }
 
     public void On_After_Login()
     {
+        this.carrot.ads.show_ads_Interstitial();
         this.GetComponent<Data_Password>().load_data();
         this.check_list_online_password();
     }
@@ -288,6 +194,28 @@ public class App : MonoBehaviour
 
     public void btn_encode_paste()
     {
+        TextEditor txt_pase = new TextEditor();
+        txt_pase.multiline = true;
+        txt_pase.Paste();
+        this.inp_string_m5d.text = txt_pase.text;
 
+    }
+
+    public void play_sound(int index)
+    {
+        if (this.carrot.get_status_sound()) this.sounds[index].Play();
+    }
+
+    public void btn_setting()
+    {
+        this.carrot.ads.show_ads_Interstitial();
+        Carrot.Carrot_Box box_setting=this.carrot.Create_Setting();
+        box_setting.set_act_before_closing(act_close_setting);
+    }
+
+    private void act_close_setting()
+    {
+        this.carrot.ads.show_ads_Interstitial();
+        this.On_After_Login();
     }
 }

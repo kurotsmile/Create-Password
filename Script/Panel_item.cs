@@ -16,8 +16,8 @@ public class Panel_item : MonoBehaviour
 
     public void click()
     {
-        GameObject.Find("App").GetComponent<App>().SoundClick.Play();
-        GameObject.Find("App").GetComponent<App>().carrot.show_input(PlayerPrefs.GetString("copy_success", "Has been copied!"), PlayerPrefs.GetString("copy_success", "Has been copied!"), txt_password.text, Carrot.Window_Input_value_Type.input_field);
+        GameObject.Find("App").GetComponent<App>().copy(this.txt_password.text);
+        GameObject.Find("App").GetComponent<App>().carrot.play_sound_click();
     }
 
     public void delete()
@@ -30,14 +30,15 @@ public class Panel_item : MonoBehaviour
         {
             GameObject.Find("App").GetComponent<Data_Password>().delete_pass(this.index);
             GameObject.Find("App").GetComponent<App>().carrot.show_msg(PlayerPrefs.GetString("del_success", "Delete selected data successfully!"));
+
         }
-        GameObject.Find("App").GetComponent<App>().SoundClick.Play();
+        GameObject.Find("App").GetComponent<App>().carrot.play_sound_click();
     }
 
     public void copy()
     {
-        GameObject.Find("App").GetComponent<App>().SoundClick.Play();
-        GameObject.Find("App").GetComponent<App>().carrot.show_input(PlayerPrefs.GetString("copy_success", "Has been copied!"), PlayerPrefs.GetString("copy_success", "Has been copied!"), txt_password.text, Carrot.Window_Input_value_Type.input_field);
+        GameObject.Find("App").GetComponent<App>().copy(this.txt_password.text);
+        GameObject.Find("App").GetComponent<App>().carrot.play_sound_click();
     }
 
     public void upload_password()
@@ -47,7 +48,7 @@ public class Panel_item : MonoBehaviour
 
     public void download_password()
     {
-        this.GetComponent<App>().carrot.show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), PlayerPrefs.GetString("download_success", "Data download successful!"), Carrot.Msg_Icon.Success);
+        GameObject.Find("App").GetComponent<App>().carrot.show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), PlayerPrefs.GetString("download_success", "Data download successful!"), Carrot.Msg_Icon.Success);
         GameObject.Find("App").GetComponent<Data_Password>().add(this.txt_password.text, this.txt_tag.text, System.DateTime.Today.ToString(), int.Parse(this.s_type));
     }
 }

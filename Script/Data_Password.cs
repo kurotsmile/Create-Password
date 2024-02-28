@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Data_Password : MonoBehaviour
 {
+    [Header("Main Obj")]
+    public App app;
+
+    [Header("Data Obj")]
     int length;
     public GameObject prefab_password;
     public Transform area_body_home;
@@ -14,8 +18,8 @@ public class Data_Password : MonoBehaviour
 
     public void load_data()
     {
-        string s_id_user_login = this.GetComponent<App>().carrot.user.get_id_user_login();
-        this.GetComponent<App>().carrot.clear_contain(this.area_body_home);
+        string s_id_user_login = app.carrot.user.get_id_user_login();
+        app.carrot.clear_contain(this.area_body_home);
         this.length = PlayerPrefs.GetInt("length", 0);
         int count_item = 0;
         for (int i = this.length; i >= 0; i--)
@@ -84,59 +88,62 @@ public class Data_Password : MonoBehaviour
 
     public void upload_password(Panel_item data_password_item)
     {
-        string s_user_id_login = this.GetComponent<App>().carrot.user.get_id_user_login();
+        string s_user_id_login = app.carrot.user.get_id_user_login();
         if (s_user_id_login != "")
         {
+            string s_id= "pass" + app.carrot.generateID();
             IDictionary data_pass = (IDictionary)Json.Deserialize("{}");
-            data_pass["user_id"] = s_user_id_login;
-            data_pass["user_lang"] = this.GetComponent<App>().carrot.user.get_lang_user_login();
+            data_pass["pass_id"] = s_id;
+            data_pass["user_id"] = app.carrot.user.get_id_user_login();
+            data_pass["user_lang"] = app.carrot.user.get_lang_user_login();
             data_pass["pass_tag"] = data_password_item.txt_tag.text;
             data_pass["pass_password"] = data_password_item.txt_password.text;
-            data_pass["pass_date"] = data_password_item.txt_password.text;
+            data_pass["pass_date"] = data_password_item.txt_date.text;
             data_pass["pass_type"] = data_password_item.s_type;
 
-            string s_json = this.GetComponent<App>().carrot.server.Convert_IDictionary_to_json(data_pass);
-            this.GetComponent<App>().carrot.server.Add_Document_To_Collection("app",this.GetComponent<App>().carrot.Carrotstore_AppId,s_json, Act_done_upload_password_done); 
+            string s_json = app.carrot.server.Convert_IDictionary_to_json(data_pass);
+            app.carrot.server.Add_Document_To_Collection(this.app.carrot.Carrotstore_AppId, s_id, s_json,Act_done_upload_password_done, Act_done_upload_password_fail);
         }
     }
 
     private void Act_done_upload_password_done(string s_data)
     {
-        IDictionary data_password = (IDictionary) Carrot.Json.Deserialize(s_data);
-        if (data_password["error"].ToString() == "2")
-            this.GetComponent<App>().carrot.show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_existed", "This data item already exists on the online archive!"));
-        else if (data_password["error"].ToString() == "0")
-            this.GetComponent<App>().carrot.show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_success", "Backup this data item successfully!"));
-        else
-            this.GetComponent<App>().carrot.show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_fail", "Backup failed"));
+        app.carrot.show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_success", "Backup this data item successfully!"));
+        app.carrot.ads.show_ads_Interstitial();
+    }
+
+    private void Act_done_upload_password_fail(string s_data)
+    {
+        app.carrot.show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_fail", "Backup failed"));
     }
 
     public void show_list_password_online()
     {
-        this.GetComponent<App>().SoundClick.Play();
+        GameObject.Find("App").GetComponent<App>().carrot.play_sound_click();
         this.get_list_pass_online();
     }
 
     private void get_list_pass_online()
     {
-        /*
-        WWWForm frm_list_password = this.GetComponent<App>().carrot.frm_act("list_password");
-        frm_list_password.AddField("user_id", this.GetComponent<App>().carrot.get_id_user_login());
-        frm_list_password.AddField("user_lang", this.GetComponent<App>().carrot.get_lang_user_login());
-        this.GetComponent<App>().carrot.send(frm_list_password, act_show_list_password_online);
-        */
+        StructuredQuery q = new(app.carrot.Carrotstore_AppId);
+        q.Add_where("user_id",Query_OP.EQUAL, app.carrot.user.get_id_user_login());
+        q.Add_where("user_lang", Query_OP.EQUAL, app.carrot.user.get_lang_user_login());
+        app.carrot.server.Get_doc(q.ToJson(), Act_show_list_password_online_done);
     }
 
-    private void act_show_list_password_online(string s_data)
+    private void Act_show_list_password_online_done(string s_data)
     {
-        IList list_pass = (IList)Carrot.Json.Deserialize(s_data);
-        if (list_pass.Count > 0)
+        Fire_Collection fc = new(s_data);
+        if (!fc.is_null)
         {
-            Carrot_Box box_list_pass=this.GetComponent<App>().carrot.Create_Box(PlayerPrefs.GetString("list_pass_online", "Backup data"), this.icon_list_password_online);
-            for(int i = 0; i < list_pass.Count; i++)
+            Carrot.Carrot_Box box_list_pass_online=app.carrot.Create_Box(PlayerPrefs.GetString("list_pass_online", "Backup data"), this.icon_list_password_online);
+            for(int i = 0; i < fc.fire_document.Length; i++)
             {
-                IDictionary data_pass = (IDictionary)list_pass[i];
+                IDictionary data_pass = fc.fire_document[i].Get_IDictionary();
                 GameObject item_password = Instantiate(this.prefab_password);
+                item_password.transform.SetParent(box_list_pass_online.area_all_item);
+                item_password.transform.localPosition = new Vector3(item_password.transform.localPosition.x, item_password.transform.localPosition.y, 0f);
+                item_password.transform.localScale = new Vector3(1f, 1f, 1f);
                 item_password.GetComponent<Panel_item>().txt_password.text = data_pass["password"].ToString();
                 item_password.GetComponent<Panel_item>().txt_date.text = data_pass["date"].ToString();
                 item_password.GetComponent<Panel_item>().txt_tag.text = data_pass["tag"].ToString();
@@ -145,7 +152,6 @@ public class Data_Password : MonoBehaviour
                 item_password.GetComponent<Panel_item>().button_download.SetActive(true);
                 item_password.GetComponent<Panel_item>().button_upload.SetActive(false);
                 item_password.GetComponent<Panel_item>().is_online = true;
-                box_list_pass.add_item(item_password);
 
                 if (data_pass["type"].ToString()=="1")
                     item_password.GetComponent<Panel_item>().icon.sprite = icon_m5d;
@@ -155,23 +161,18 @@ public class Data_Password : MonoBehaviour
         }
         else
         {
-            this.GetComponent<App>().carrot.show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"),PlayerPrefs.GetString("no_item", "No items have been archived yet"),Carrot.Msg_Icon.Alert);
+            app.carrot.show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"),PlayerPrefs.GetString("no_item", "No items have been archived yet"),Carrot.Msg_Icon.Alert);
         }
     }
 
     public void delete_pass_online(string s_id)
     {
-        /*
-        WWWForm frm_del = this.GetComponent<App>().carrot.frm_act("del_password");
-        frm_del.AddField("id_del", s_id);
-        frm_del.AddField("lang_del", this.GetComponent<App>().carrot.get_lang_user_login());
-        this.GetComponent<App>().carrot.send(frm_del, act_delete_pass);
-        */
+        app.carrot.server.Delete_Doc(app.carrot.Carrotstore_AppId, s_id, act_delete_pass);
     }
 
     private void act_delete_pass(string s_data)
     {
-        this.GetComponent<App>().carrot.show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), PlayerPrefs.GetString("del_success", "Delete selected data successfully!"), Carrot.Msg_Icon.Success);
+        app.carrot.show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), PlayerPrefs.GetString("del_success", "Delete selected data successfully!"), Carrot.Msg_Icon.Success);
         this.get_list_pass_online();
     }
 }
