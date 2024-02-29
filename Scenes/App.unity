@@ -1322,6 +1322,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   carrot: {fileID: 1220402499}
+  pass: {fileID: 265890220}
   panel_add: {fileID: 619696438}
   button_List_Online_Password: {fileID: 330158085}
   txt_password: {fileID: 2051630504}
@@ -2052,7 +2053,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 265890220}
         m_TargetAssemblyTypeName: Data_Password, Assembly-CSharp
-        m_MethodName: show_list_password_online
+        m_MethodName: Show_list_password_online
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

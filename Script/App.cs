@@ -1,11 +1,17 @@
-﻿using System;
+﻿using Carrot;
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 
 public class App : MonoBehaviour
 {
+    [Header("Main Obj")]
     public Carrot.Carrot carrot;
+    public Data_Password pass;
+
+    [Header("Add Obj")]
     public GameObject panel_add;
     public GameObject button_List_Online_Password;
 
@@ -40,7 +46,7 @@ public class App : MonoBehaviour
 
         this.panel_add.SetActive(false);
         this.panel_m5d.SetActive(false);
-        this.GetComponent<Data_Password>().load_data();
+        pass.Load_data();
         this.check_list_online_password();
     }
 
@@ -61,7 +67,7 @@ public class App : MonoBehaviour
     {
         this.carrot.ads.show_ads_Interstitial();
         this.create_pass();
-        this.inp_password_tag.text = "Password " + this.GetComponent<Data_Password>().get_length();
+        this.inp_password_tag.text = "Password " + pass.Get_length();
         this.panel_add.SetActive(true);
     }
 
@@ -75,7 +81,7 @@ public class App : MonoBehaviour
         bool includeSpecial = this.Toggle_includeSpecial.isOn;
         int lengthOfPassword =int.Parse(this.slider_password.value.ToString());
 
-        PasswordGeneratorSettings settings = new PasswordGeneratorSettings(includeLowercase, includeUppercase, includeNumeric, includeSpecial, lengthOfPassword);
+        PasswordGeneratorSettings settings = new(includeLowercase, includeUppercase, includeNumeric, includeSpecial, lengthOfPassword);
         string password;
         if (!settings.IsValidLength())
         {
@@ -102,7 +108,16 @@ public class App : MonoBehaviour
         this.carrot.ads.show_ads_Interstitial();
         this.play_sound(0);
         this.carrot.ads.show_ads_Interstitial();
-        this.GetComponent<Data_Password>().add(this.txt_password.text, this.inp_password_tag.text, DateTime.Today.ToString(),0);
+        IDictionary data_pass = (IDictionary)Json.Deserialize("{}");
+        data_pass["pass_id"] = "pass" + carrot.generateID() + UnityEngine.Random.Range(0, 20);
+        data_pass["user_id"] = carrot.user.get_id_user_login();
+        data_pass["user_lang"] = carrot.user.get_lang_user_login();
+        data_pass["pass_tag"] = this.inp_password_tag.text;
+        data_pass["pass_password"] = this.txt_password.text;
+        data_pass["pass_date"] = DateTime.Today;
+        data_pass["pass_type"] = "0";
+
+        pass.Add(data_pass);
         this.panel_add.SetActive(false);
     }
 
@@ -110,7 +125,17 @@ public class App : MonoBehaviour
     {
         this.play_sound(0);
         this.carrot.ads.show_ads_Interstitial();
-        this.GetComponent<Data_Password>().add(this.txt_m5d_show.text, this.inp_string_m5d.text, DateTime.Today.ToString(), 1);
+
+        IDictionary data_pass = (IDictionary)Json.Deserialize("{}");
+        data_pass["pass_id"] = "pass" + carrot.generateID() + UnityEngine.Random.Range(0, 20);
+        data_pass["user_id"] = carrot.user.get_id_user_login();
+        data_pass["user_lang"] = carrot.user.get_lang_user_login();
+        data_pass["pass_tag"] = this.inp_string_m5d.text;
+        data_pass["pass_password"] = this.txt_m5d_show.text;
+        data_pass["pass_date"] = DateTime.Today;
+        data_pass["pass_type"] = "1";
+
+        pass.Add(data_pass);
         this.panel_m5d.SetActive(false);
     }
 
@@ -159,6 +184,7 @@ public class App : MonoBehaviour
 
     public void copy(string s_copy)
     {
+        this.carrot.play_sound_click();
         TextEditor txt_copy = new TextEditor();
         txt_copy.text = s_copy;
         txt_copy.SelectAll();
@@ -180,7 +206,7 @@ public class App : MonoBehaviour
     public void On_After_Login()
     {
         this.carrot.ads.show_ads_Interstitial();
-        this.GetComponent<Data_Password>().load_data();
+        pass.Load_data();
         this.check_list_online_password();
     }
 
