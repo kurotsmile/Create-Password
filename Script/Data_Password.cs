@@ -1,8 +1,6 @@
 ﻿using Carrot;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Purchasing.MiniJSON;
 
 public class Data_Password : MonoBehaviour
 {
