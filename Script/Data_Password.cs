@@ -1,7 +1,8 @@
 ﻿using Carrot;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Progress;
+using UnityEngine.Purchasing.MiniJSON;
 
 public class Data_Password : MonoBehaviour
 {
@@ -31,7 +32,7 @@ public class Data_Password : MonoBehaviour
             if (s_data!= "")
             {
                 var index = i;
-                IDictionary data_pass = (IDictionary) Json.Deserialize(s_data);
+                IDictionary data_pass = (IDictionary) Carrot.Json.Deserialize(s_data);
                 GameObject item_password = Instantiate(this.prefab_password);
                 item_password.transform.SetParent(this.area_body_home);
                 item_password.transform.localPosition = new Vector3(item_password.transform.localPosition.x, item_password.transform.localPosition.y, 0f);
@@ -76,7 +77,8 @@ public class Data_Password : MonoBehaviour
 
     public void Add(IDictionary obj_json)
     {
-        string s_pass = Json.Serialize(obj_json);
+        string s_pass = UnityEngine.Purchasing.MiniJSON.Json.Serialize(obj_json);
+        Debug.Log(s_pass);
         PlayerPrefs.SetString("data_p_"+this.length,s_pass);
         this.length++;
         PlayerPrefs.SetInt("length_pass", this.length);
@@ -102,7 +104,7 @@ public class Data_Password : MonoBehaviour
         {
             this.app.carrot.show_loading();
             string s_data = PlayerPrefs.GetString("data_p_" + index, "");
-            IDictionary data_pass = (IDictionary)Json.Deserialize(s_data);
+            IDictionary data_pass = (IDictionary)Carrot.Json.Deserialize(s_data);
 
             data_pass["user_id"] = app.carrot.user.get_id_user_login();
             data_pass["user_lang"] = app.carrot.user.get_lang_user_login();
@@ -128,6 +130,7 @@ public class Data_Password : MonoBehaviour
 
     public void Show_list_password_online()
     {
+        app.carrot.ads.show_ads_Interstitial();
         app.carrot.play_sound_click();
         this.Get_list_pass_online();
     }
@@ -138,7 +141,6 @@ public class Data_Password : MonoBehaviour
         this.app.carrot.show_loading();
         StructuredQuery q = new(app.carrot.Carrotstore_AppId);
         q.Add_where("user_id",Query_OP.EQUAL, app.carrot.user.get_id_user_login());
-        q.Add_where("user_lang", Query_OP.EQUAL, app.carrot.user.get_lang_user_login());
         app.carrot.server.Get_doc(q.ToJson(), Act_show_list_password_online_done, Act_show_list_password_online_fail);
     }
 
@@ -152,7 +154,6 @@ public class Data_Password : MonoBehaviour
             for(int i = 0; i < fc.fire_document.Length; i++)
             {
                 var data_pass = fc.fire_document[i].Get_IDictionary();
-
                 Carrot_Box_Item item_pass = box_list.create_item("item_" + i);
                 item_pass.set_title(data_pass["pass_password"].ToString());
                 item_pass.set_tip(data_pass["pass_tag"].ToString() + " - " + data_pass["pass_date"].ToString());
