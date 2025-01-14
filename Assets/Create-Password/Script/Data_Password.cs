@@ -91,7 +91,7 @@ public class Data_Password : MonoBehaviour
     public void Delete_pass(int index_delete)
     {
         PlayerPrefs.DeleteKey("data_p_" + index_delete);
-        app.carrot.show_msg(PlayerPrefs.GetString("del_success", "Delete selected data successfully!"));
+        app.carrot.Show_msg(PlayerPrefs.GetString("del_success", "Delete selected data successfully!"));
         this.Load_data();
     }
 
@@ -116,19 +116,19 @@ public class Data_Password : MonoBehaviour
     {
         app.carrot.play_vibrate();
         app.carrot.hide_loading();
-        app.carrot.show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_success", "Backup this data item successfully!"));
-        app.carrot.ads.show_ads_Interstitial();
+        app.carrot.Show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_success", "Backup this data item successfully!"));
+        app.ads.Show_ads_Interstitial();
     }
 
     private void Act_done_upload_password_fail(string s_data)
     {
         app.carrot.hide_loading();
-        app.carrot.show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_fail", "Backup failed"));
+        app.carrot.Show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_fail", "Backup failed"));
     }
 
     public void Show_list_password_online()
     {
-        app.carrot.ads.show_ads_Interstitial();
+        app.ads.Show_ads_Interstitial();
         app.carrot.play_sound_click();
         this.Get_list_pass_online();
     }
@@ -176,14 +176,14 @@ public class Data_Password : MonoBehaviour
         }
         else
         {
-            app.carrot.show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"),PlayerPrefs.GetString("no_item", "No items have been archived yet"),Carrot.Msg_Icon.Alert);
+            app.carrot.Show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"),PlayerPrefs.GetString("no_item", "No items have been archived yet"),Carrot.Msg_Icon.Alert);
         }
     }
 
     private void Act_show_list_password_online_fail(string s_error)
     {
         this.app.carrot.hide_loading();
-        this.app.carrot.show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), s_error, Msg_Icon.Error);
+        this.app.carrot.Show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), s_error, Msg_Icon.Error);
     }
 
     public void delete_pass_online(string s_id)
@@ -194,7 +194,7 @@ public class Data_Password : MonoBehaviour
     private void Act_delete_pass(string s_data)
     {
         app.carrot.play_vibrate();
-        app.carrot.show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), PlayerPrefs.GetString("del_success", "Delete selected data successfully!"), Msg_Icon.Success);
+        app.carrot.Show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), PlayerPrefs.GetString("del_success", "Delete selected data successfully!"), Msg_Icon.Success);
         Get_list_pass_online();
     }
 
@@ -202,6 +202,6 @@ public class Data_Password : MonoBehaviour
     {
         app.carrot.play_vibrate();
         Add(data_pass);
-        app.carrot.show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), PlayerPrefs.GetString("download_success", "Data download successful!"), Carrot.Msg_Icon.Success);
+        app.carrot.Show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), PlayerPrefs.GetString("download_success", "Data download successful!"), Carrot.Msg_Icon.Success);
     }
 }

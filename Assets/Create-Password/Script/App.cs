@@ -11,6 +11,8 @@ public class App : MonoBehaviour
     [Header("Main Obj")]
     public Carrot.Carrot carrot;
     public Data_Password pass;
+    public IronSourceAds ads;
+    public Carrot_File file;
 
     [Header("Add Obj")]
     public GameObject panel_add;
@@ -44,6 +46,8 @@ public class App : MonoBehaviour
     {
         carrot.Load_Carrot(Check_exit_app);
         carrot.act_after_close_all_box = check_list_online_password;
+        this.ads.On_Load();
+
         carrot.game.load_bk_music(this.bk_music);
         carrot.change_sound_click(SoundClicl_clip);
 
@@ -68,7 +72,7 @@ public class App : MonoBehaviour
 
     public void show_add()
     {
-        carrot.ads.show_ads_Interstitial();
+        this.ads.Show_ads_Interstitial();
         create_pass();
         inp_password_tag.text = "Password " + pass.Get_length();
         panel_add.SetActive(true);
@@ -123,7 +127,7 @@ public class App : MonoBehaviour
 
         pass.Add(data_pass);
         panel_add.SetActive(false);
-        carrot.ads.show_ads_Interstitial();
+        this.ads.Show_ads_Interstitial();
     }
 
     public void add_md5()
@@ -144,12 +148,12 @@ public class App : MonoBehaviour
 
         pass.Add(data_pass);
         panel_m5d.SetActive(false);
-        carrot.ads.show_ads_Interstitial();
+        this.ads.Show_ads_Interstitial();
     }
 
     public void show_m5d()
     {
-        carrot.ads.show_ads_Interstitial();
+        this.ads.Show_ads_Interstitial();
         carrot.play_sound_click();
         panel_m5d.SetActive(true);
         panel_m5d_menu.SetActive(true);
@@ -197,7 +201,7 @@ public class App : MonoBehaviour
         txt_copy.text = s_copy;
         txt_copy.SelectAll();
         txt_copy.Copy();
-        carrot.show_input(PlayerPrefs.GetString("copy", "Copy"), PlayerPrefs.GetString("copy_tip", "You can copy the data created in the text input box below"), s_copy);
+        carrot.Show_input(PlayerPrefs.GetString("copy", "Copy"), PlayerPrefs.GetString("copy_tip", "You can copy the data created in the text input box below"), s_copy);
     }
 
     public void set_length_by_inp()
@@ -213,7 +217,7 @@ public class App : MonoBehaviour
 
     public void On_After_Login()
     {
-        carrot.ads.show_ads_Interstitial();
+        this.ads.Show_ads_Interstitial();
         pass.Load_data();
         check_list_online_password();
     }
@@ -228,10 +232,7 @@ public class App : MonoBehaviour
 
     public void btn_encode_paste()
     {
-        TextEditor txt_pase = new()
-        {
-            multiline = true
-        };
+        TextEditor txt_pase = new();
         txt_pase.Paste();
         inp_string_m5d.text = txt_pase.text;
     }
@@ -243,14 +244,14 @@ public class App : MonoBehaviour
 
     public void btn_setting()
     {
-        carrot.ads.show_ads_Interstitial();
+        this.ads.Show_ads_Interstitial();
         Carrot_Box box_setting =carrot.Create_Setting();
         box_setting.set_act_before_closing(Act_close_setting);
     }
 
     private void Act_close_setting()
     {
-        carrot.ads.show_ads_Interstitial();
+        this.ads.Show_ads_Interstitial();
         On_After_Login();
     }
 }
