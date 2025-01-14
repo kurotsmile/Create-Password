@@ -1,5 +1,7 @@
 ﻿using Carrot;
+using SimpleFileBrowser;
 using System.Collections;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 
 public class Data_Password : MonoBehaviour
@@ -14,6 +16,9 @@ public class Data_Password : MonoBehaviour
     public Sprite icon_password;
     public Sprite icon_m5d;
     public Sprite icon_list_password_online;
+    public Sprite icon_backup_local;
+    public Sprite icon_open_file;
+    public Sprite icon_save_file;
     public GameObject panel_no_item;
 
     private Carrot_Box box_list = null;
@@ -75,12 +80,21 @@ public class Data_Password : MonoBehaviour
 
     public void Add(IDictionary obj_json)
     {
+        this.Add_data_item(obj_json);
+        this.Load_data();
+    }
+
+    private void Add_data_item(IDictionary obj_json){
         string s_pass = UnityEngine.Purchasing.MiniJSON.Json.Serialize(obj_json);
         Debug.Log(s_pass);
         PlayerPrefs.SetString("data_p_"+this.length,s_pass);
         this.length++;
         PlayerPrefs.SetInt("length_pass", this.length);
-        this.Load_data();
+    }
+
+    public void Delete_all_data(){
+        for(int i=0;i<this.length;i++) PlayerPrefs.DeleteKey("data_p_"+i);
+        PlayerPrefs.DeleteKey("length_pass");
     }
 
     public int Get_length()
@@ -91,7 +105,7 @@ public class Data_Password : MonoBehaviour
     public void Delete_pass(int index_delete)
     {
         PlayerPrefs.DeleteKey("data_p_" + index_delete);
-        app.carrot.Show_msg(PlayerPrefs.GetString("del_success", "Delete selected data successfully!"));
+        app.carrot.Show_msg(this.app.carrot.lang.Val("del_success", "Delete selected data successfully!"));
         this.Load_data();
     }
 
@@ -116,14 +130,14 @@ public class Data_Password : MonoBehaviour
     {
         app.carrot.play_vibrate();
         app.carrot.hide_loading();
-        app.carrot.Show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_success", "Backup this data item successfully!"));
+        app.carrot.Show_msg(this.app.carrot.lang.Val("backup", "Backup by account"), this.app.carrot.lang.Val("backup_success", "Backup this data item successfully!"));
         app.ads.Show_ads_Interstitial();
     }
 
     private void Act_done_upload_password_fail(string s_data)
     {
         app.carrot.hide_loading();
-        app.carrot.Show_msg(PlayerPrefs.GetString("backup", "Backup by account"), PlayerPrefs.GetString("backup_fail", "Backup failed"));
+        app.carrot.Show_msg(this.app.carrot.lang.Val("backup", "Backup by account"),this.app.carrot.lang.Val("backup_fail", "Backup failed"));
     }
 
     public void Show_list_password_online()
@@ -148,7 +162,7 @@ public class Data_Password : MonoBehaviour
         Fire_Collection fc = new(s_data);
         if (!fc.is_null)
         {
-            this.box_list = app.carrot.Create_Box(PlayerPrefs.GetString("list_pass_online", "Backup data"), this.icon_list_password_online);
+            this.box_list = app.carrot.Create_Box(this.app.carrot.lang.Val("list_pass_online", "Backup data"), this.icon_list_password_online);
             for(int i = 0; i < fc.fire_document.Length; i++)
             {
                 var data_pass = fc.fire_document[i].Get_IDictionary();
@@ -176,14 +190,14 @@ public class Data_Password : MonoBehaviour
         }
         else
         {
-            app.carrot.Show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"),PlayerPrefs.GetString("no_item", "No items have been archived yet"),Carrot.Msg_Icon.Alert);
+            app.carrot.Show_msg(this.app.carrot.lang.Val("list_pass_online", "Backup data"),this.app.carrot.lang.Val("no_item", "No items have been archived yet"),Carrot.Msg_Icon.Alert);
         }
     }
 
     private void Act_show_list_password_online_fail(string s_error)
     {
         this.app.carrot.hide_loading();
-        this.app.carrot.Show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), s_error, Msg_Icon.Error);
+        this.app.carrot.Show_msg(this.app.carrot.lang.Val("list_pass_online", "Backup data"), s_error, Msg_Icon.Error);
     }
 
     public void delete_pass_online(string s_id)
@@ -194,7 +208,7 @@ public class Data_Password : MonoBehaviour
     private void Act_delete_pass(string s_data)
     {
         app.carrot.play_vibrate();
-        app.carrot.Show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), PlayerPrefs.GetString("del_success", "Delete selected data successfully!"), Msg_Icon.Success);
+        app.carrot.Show_msg(this.app.carrot.lang.Val("list_pass_online", "Backup data"),this.app.carrot.lang.Val("del_success", "Delete selected data successfully!"), Msg_Icon.Success);
         Get_list_pass_online();
     }
 
@@ -202,6 +216,58 @@ public class Data_Password : MonoBehaviour
     {
         app.carrot.play_vibrate();
         Add(data_pass);
-        app.carrot.Show_msg(PlayerPrefs.GetString("list_pass_online", "Backup data"), PlayerPrefs.GetString("download_success", "Data download successful!"), Carrot.Msg_Icon.Success);
+        app.carrot.Show_msg(this.app.carrot.lang.Val("list_pass_online", "Backup data"),this.app.carrot.lang.Val("download_success", "Data download successful!"), Carrot.Msg_Icon.Success);
+    }
+
+    public void Btn_show_backup_local(){
+        this.app.carrot.play_sound_click();
+        this.box_list=this.app.carrot.Create_Box();
+        this.box_list.set_icon(this.icon_backup_local);
+        this.box_list.set_title(this.app.carrot.lang.Val("local_backup","Local backup"));
+
+        Carrot_Box_Item item_import=this.box_list.create_item("item_import");
+        item_import.set_title(this.app.carrot.lang.Val("import_local","Import backed up files"));
+        item_import.set_tip(this.app.carrot.lang.Val("import_local_tip","Import previously backed up files"));
+        item_import.set_icon(this.icon_open_file);
+        item_import.set_act(()=>{
+            this.app.file.Set_filter(Carrot_File_Data.JsonData);
+            this.app.file.Open_file(s_paths=>{
+                this.Delete_all_data();
+                string s_data=FileBrowserHelpers.ReadTextFromFile(s_paths[0]);
+                IList list_data=Json.Deserialize(s_data) as IList;
+                for(int i=0;i<list_data.Count;i++){
+                    IDictionary data_item=(IDictionary) list_data[i];
+                    this.Add_data_item(data_item);
+                }
+                this.Load_data();
+                this.app.carrot.Show_msg(this.app.carrot.lang.Val("import_local","Import backed up files"),this.app.carrot.lang.Val("import_success","Data import successful!"),Msg_Icon.Success);
+            });
+        });
+
+        Carrot_Box_Item item_export=this.box_list.create_item("item_export");
+        item_export.set_title(this.app.carrot.lang.Val("export_local","Export backup file"));
+        item_export.set_tip(this.app.carrot.lang.Val("export_local_tip","Export local backup file to storage device disk"));
+        item_export.set_icon(this.icon_save_file);
+        item_export.set_act(()=>{
+            this.app.file.Set_filter(Carrot_File_Data.JsonData);
+            this.app.file.Save_file(s_paths=>{
+                int count_item = 0;
+                IList list_bkup=Json.Deserialize("[]") as IList;
+                for (int i = this.length; i >= 0; i--)
+                {
+                    string s_data = PlayerPrefs.GetString("data_p_" + i, "");
+                    if (s_data!= ""){
+                        IDictionary data_pass = (IDictionary) Carrot.Json.Deserialize(s_data);
+                        list_bkup.Add(data_pass);
+                        count_item++;
+                    }
+                };
+
+                if(count_item>=0) this.app.carrot.Show_msg(this.app.carrot.lang.Val("export_local","Export backup file"),this.app.carrot.lang.Val("export_success","Data export successful!"),Msg_Icon.Success);
+
+                string s_data_list=Json.Serialize(list_bkup);
+                FileBrowserHelpers.WriteTextToFile(s_paths[0],s_data_list);
+            });
+        });
     }
 }
