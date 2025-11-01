@@ -1,5 +1,4 @@
-﻿using Carrot;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,7 +11,7 @@ public class App : MonoBehaviour
     public Carrot.Carrot carrot;
     public Data_Password pass;
     public IronSourceAds ads;
-    public Carrot_File file;
+    public Carrot.Carrot_File file;
 
     [Header("Add Obj")]
     public GameObject panel_add;
@@ -70,9 +69,9 @@ public class App : MonoBehaviour
         }
     }
 
-    public void show_add()
+    public void show_add() 
     {
-        this.ads.Show_ads_Interstitial();
+        this.ads.show_ads_Interstitial();
         create_pass();
         inp_password_tag.text = "Password " + pass.Get_length();
         panel_add.SetActive(true);
@@ -127,7 +126,7 @@ public class App : MonoBehaviour
 
         pass.Add(data_pass);
         panel_add.SetActive(false);
-        this.ads.Show_ads_Interstitial();
+        this.ads.show_ads_Interstitial();
     }
 
     public void add_md5()
@@ -148,12 +147,12 @@ public class App : MonoBehaviour
 
         pass.Add(data_pass);
         panel_m5d.SetActive(false);
-        this.ads.Show_ads_Interstitial();
+        this.ads.show_ads_Interstitial();
     }
 
     public void show_m5d()
     {
-        this.ads.Show_ads_Interstitial();
+        this.ads.show_ads_Interstitial();
         carrot.play_sound_click();
         panel_m5d.SetActive(true);
         panel_m5d_menu.SetActive(true);
@@ -217,7 +216,7 @@ public class App : MonoBehaviour
 
     public void On_After_Login()
     {
-        this.ads.Show_ads_Interstitial();
+        this.ads.show_ads_Interstitial();
         pass.Load_data();
         check_list_online_password();
     }
@@ -244,14 +243,14 @@ public class App : MonoBehaviour
 
     public void btn_setting()
     {
-        this.ads.Show_ads_Interstitial();
-        Carrot_Box box_setting =carrot.Create_Setting();
+        this.ads.show_ads_Interstitial();
+        Carrot.Carrot_Box box_setting =carrot.Create_Setting();
         box_setting.set_act_before_closing(Act_close_setting);
     }
 
     private void Act_close_setting()
     {
-        this.ads.Show_ads_Interstitial();
+        this.ads.show_ads_Interstitial();
         On_After_Login();
     }
 }

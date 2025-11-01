@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Password Create.sln"
+    "dotnet.defaultSolution": "Create-Password.slnx"
 }

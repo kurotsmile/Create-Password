@@ -131,7 +131,7 @@ public class Data_Password : MonoBehaviour
         app.carrot.play_vibrate();
         app.carrot.hide_loading();
         app.carrot.Show_msg(this.app.carrot.lang.Val("backup", "Backup by account"), this.app.carrot.lang.Val("backup_success", "Backup this data item successfully!"));
-        app.ads.Show_ads_Interstitial();
+        app.ads.show_ads_Interstitial();
     }
 
     private void Act_done_upload_password_fail(string s_data)
@@ -142,7 +142,7 @@ public class Data_Password : MonoBehaviour
 
     public void Show_list_password_online()
     {
-        app.ads.Show_ads_Interstitial();
+        app.ads.show_ads_Interstitial();
         app.carrot.play_sound_click();
         this.Get_list_pass_online();
     }
